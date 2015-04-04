@@ -28,6 +28,7 @@ exec { 'get-qemu':
   command   => '/usr/bin/git clone https://github.com/geofft/qemu.git -b 6.828-1.7.0',
   cwd       => '/tmp',
   user      => 'root',
+  onlyif    => 'test ! -f /usr/local/bin/qemu-system-i386',
   creates   => '/tmp/qemu',
   require   => Package['git']
 }
@@ -36,6 +37,7 @@ exec { 'configure-qemu':
   command   => '/tmp/qemu/configure --disable-kvm --target-list="i386-softmmu x86_64-softmmu"',
   cwd       => '/tmp/qemu/',
   user      => 'root',
+  onlyif    => 'test ! -f /usr/local/bin/qemu-system-i386',
   require   => [ Exec['get-qemu'],
                 Package['gcc-multilib','build-essential','libtool','autoconf','libsdl1.2-dev']
                 ]
@@ -46,6 +48,7 @@ exec { 'make-qemu':
   cwd       => '/tmp/qemu/',
   user      => 'root',
   timeout   => 1800,
+  onlyif    => 'test ! -f /usr/local/bin/qemu-system-i386',
   require   => Exec['configure-qemu']
 }
 
@@ -53,6 +56,7 @@ exec { 'install-qemu':
   command   => 'make install',
   cwd       => '/tmp/qemu/',
   user      => 'root',
+  creates   => '/usr/local/bin/qemu-system-i386',
   require   => Exec['configure-qemu','make-qemu']
 }
 
